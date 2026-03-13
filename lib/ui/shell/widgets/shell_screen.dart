@@ -20,7 +20,7 @@ class ShellScreen extends StatelessWidget {
         title: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("Analisis"),
+            Text("Secretaria - EventoWeb"),
             FutureBuilder(
               future: homeViewModel.versionApp,
               builder: (ctx, snapshot) {

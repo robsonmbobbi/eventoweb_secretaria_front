@@ -46,7 +46,7 @@ class _LoginWidgetDesktopState extends State<LoginWidgetDesktop> {
                             message: widget.viewModel.validationMessages!, 
                             type: MessagePanelType.warning
                           ),  
-                        const Image(image: AssetImage('assets/analisis.png')),
+                        const Icon(Icons.login, size: 70),
                         FutureBuilder(
                           future: widget.viewModel.versionApp, 
                           builder: (ctx, builder) {

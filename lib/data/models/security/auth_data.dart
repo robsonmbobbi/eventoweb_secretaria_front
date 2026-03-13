@@ -13,17 +13,17 @@ class DTOAuthData {
 
   factory DTOAuthData.fromJson(Map<String, dynamic> json) {
     return DTOAuthData(
-      user: DTOUsuario.fromJson(json['Usuario']),
-      validate: DateTime.parse(json['Validade']),
-      authToken: json['TokenAutenticacao'],
+      user: DTOUsuario.fromJson(json['usuario']),
+      validate: DateTime.parse(json['validade']),
+      authToken: json['tokenAutenticacao'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'Usuario': user.toJson(),
-      'Validade': validate.toIso8601String(),
-      'TokenAutenticacao': authToken,
+      'usuario': user.toJson(),
+      'validade': validate.toIso8601String(),
+      'tokenAutenticacao': authToken,
     };
   }
 }

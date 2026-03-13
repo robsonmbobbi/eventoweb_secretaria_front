@@ -11,16 +11,16 @@ class DTOUsuario {
 
   factory DTOUsuario.fromJson(Map<String, dynamic> json) {
     return DTOUsuario(
-      login: json['Login'] as String,
-      nome: json['Nome'] as String,
-      ehAdministrador: json['EhAdministrador'] as bool,
+      login: json['login'] as String,
+      nome: json['nome'] as String,
+      ehAdministrador: json['ehAdministrador'] as bool,
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'Login': login,
-    'Nome': nome,
-    'EhAdministrador': ehAdministrador
+    'login': login,
+    'nome': nome,
+    'ehAdministrador': ehAdministrador
   };
 }
 
@@ -38,18 +38,18 @@ class DTOUsuarioInclusao extends DTOUsuario {
 
   factory DTOUsuarioInclusao.fromJson(Map<String, dynamic> json) {
     return DTOUsuarioInclusao(
-      login: json['Login'] as String,
-      nome: json['Nome'] as String,
-      ehAdministrador: json['EhAdministrador'] as bool,
-      senha: json['Senha'] as String,
-      repeticaoSenha: json['RepeticaoSenha'] as String,
+      login: json['login'] as String,
+      nome: json['nome'] as String,
+      ehAdministrador: json['ehAdministrador'] as bool,
+      senha: json['senha'] as String,
+      repeticaoSenha: json['repeticaoSenha'] as String,
     );
   }
 
   @override
   Map<String, dynamic> toJson() => {
     ...super.toJson(),
-    'Senha': senha,
-    'RepeticaoSenha': repeticaoSenha,
+    'senha': senha,
+    'repeticaoSenha': repeticaoSenha,
   };
 }
