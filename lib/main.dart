@@ -1,11 +1,11 @@
-import 'package:eventoweb_secretaria_front/data/repositories/auth_repository.dart';
+import 'package:eventoweb_secretaria_front/data/repositories/security/auth_repository.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/version_app_repository.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/ws_client.dart';
 import 'package:eventoweb_secretaria_front/domain/auth_controller.dart';
 import 'package:eventoweb_secretaria_front/ui/core/themes/theme_back_button.dart';
 import 'package:eventoweb_secretaria_front/ui/core/themes/theme_button_menu.dart';
 import 'package:eventoweb_secretaria_front/ui/login/view_model/login_viewmodel.dart';
-import 'package:eventoweb_secretaria_front/data/repositories/auth_ws.dart';
+import 'package:eventoweb_secretaria_front/data/repositories/security/auth_ws.dart';
 import 'package:eventoweb_secretaria_front/routing/router.dart';
 import 'package:eventoweb_secretaria_front/ui/shell/view_model/shell_viewmodel.dart';
 import 'package:eventoweb_secretaria_front/ui/usuarios/listagem/view_model/usuarios_listagem_viewmodel.dart';

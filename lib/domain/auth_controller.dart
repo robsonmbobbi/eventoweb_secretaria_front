@@ -1,7 +1,7 @@
 import 'package:eventoweb_secretaria_front/data/models/security/login_data.dart';
 import 'package:eventoweb_secretaria_front/data/models/users/user_objects.dart';
-import 'package:eventoweb_secretaria_front/data/repositories/auth_repository.dart';
-import 'package:eventoweb_secretaria_front/data/repositories/auth_ws.dart';
+import 'package:eventoweb_secretaria_front/data/repositories/security/auth_repository.dart';
+import 'package:eventoweb_secretaria_front/data/repositories/security/auth_ws.dart';
 import 'package:flutter/material.dart';
 
 class AuthController extends ChangeNotifier {
