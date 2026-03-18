@@ -25,7 +25,7 @@ class ShellScreen extends StatelessWidget {
               future: homeViewModel.versionApp,
               builder: (ctx, snapshot) {
                 return Padding(
-                  padding: EdgeInsetsGeometry.directional(start: 24.0),
+                  padding: EdgeInsetsGeometry.directional(start: 1.0),
                   child: Text(
                     "Versão: ${snapshot.data ?? "Desconhecida"}",
                     style: Theme.of(ctx).textTheme.labelSmall?.copyWith(

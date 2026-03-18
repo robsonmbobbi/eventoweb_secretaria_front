@@ -1,11 +1,15 @@
 import 'package:eventoweb_secretaria_front/routing/routes.dart';
 import 'package:eventoweb_secretaria_front/domain/auth_controller.dart';
+import 'package:eventoweb_secretaria_front/ui/event_home/widgets/event_home_screen.dart';
 import 'package:eventoweb_secretaria_front/ui/home/widgets/home_screen.dart';
+import 'package:eventoweb_secretaria_front/ui/inscricoes/listagem/widgets/inscricoes_listagem_screen.dart';
 import 'package:eventoweb_secretaria_front/ui/shell/widgets/shell_screen.dart';
 import 'package:eventoweb_secretaria_front/ui/login/widgets/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
+import '../ui/event_shell/widgets/event_shell_screen.dart';
 
 class GenerationRouter {
   final AuthController _authController;
@@ -40,7 +44,26 @@ class GenerationRouter {
                 return HomeScreen(context.read());
               },
               routes: [
-
+                ShellRoute(
+                    builder: (context, state, child) {
+                      var idEvento = int.parse(state.pathParameters["idEvento"] ?? "-1");
+                      return EventShellScreen(context.read(), idEvento, child);
+                    },
+                    routes: [
+                      GoRoute(
+                        path: "/evento/:idEvento",
+                        builder: (context, state) {
+                          return EventHomeScreen(context.read());
+                        },
+                      ),
+                      GoRoute(
+                        path: "/evento/:idEvento/inscricoes",
+                        builder: (context, state) {
+                          return InscricoesListagemScreen(viewModel: context.read());
+                        },
+                      ),
+                    ]
+                ),
               ],
             ),
           ],
