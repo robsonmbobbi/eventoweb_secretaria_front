@@ -1,0 +1,4 @@
+enum EnumTipoLog {
+  info,
+  erro,
+}

@@ -1,0 +1,4 @@
+enum EnumTipoPagamento {
+  cartaoCredito,
+  pix,
+}

@@ -8,7 +8,7 @@ import '../../../../utils/result.dart';
 import '../../../core/themes/theme_back_button.dart';
 import '../../../core/ui/message_panel_widget.dart';
 import '../view_model/inscricoes_listagem_viewmodel.dart';
-import 'InscricoesListagemDataSource.dart';
+import 'inscricoes_listagem_data_source.dart';
 
 class InscricoesListagemScreen extends StatefulWidget {
   final InscricoesListagemViewModel viewModel;

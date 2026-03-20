@@ -1,5 +1,6 @@
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_inscricao_listagem.dart';
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_tipo_inscricao.dart';
+import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_tipo_participante.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
@@ -15,13 +16,34 @@ class InscricoesListagemDataSource extends DataGridSource {
               DataGridCell<int>(columnName: 'id', value: e.id),
               DataGridCell<String>(columnName: 'nome', value: e.nome),
               DataGridCell<String>(columnName: 'cidade', value: '${e.cidade ?? ""}/${e.uf ?? ""}'),
-              DataGridCell<String>(columnName: 'tipo', value: e.tipo == EnumTipoInscricao.adulto ? 'Adulto' : 'Infantil'),
+              DataGridCell<String>(columnName: 'tipo', value: _getTipoDescricao(e)),
               DataGridCell<String>(columnName: 'dormira', value: e.dormira ? 'Sim' : 'Não'),
               DataGridCell<DTOInscricaoListagem>(columnName: 'acoes', value: e),
             ],
           ),
         )
         .toList();
+  }
+
+  String _getTipoDescricao(DTOInscricaoListagem inscricao) {
+    if (inscricao.tipo == EnumTipoInscricao.infantil) {
+      return 'Infantil';
+    }
+
+    if (inscricao.tipoParticipante == null) {
+      return 'Adulto';
+    }
+
+    switch (inscricao.tipoParticipante) {
+      case EnumTipoParticipante.participante:
+        return 'Participante';
+      case EnumTipoParticipante.participanteTrabalhador:
+        return 'Participante/Trabalhador';
+      case EnumTipoParticipante.trabalhador:
+        return 'Trabalhador';
+      default:
+        return 'Adulto';
+    }
   }
 
   @override
