@@ -1,29 +1,27 @@
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_inscricao.dart';
-import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_pessoa.dart';
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_tipo_inscricao.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 
 class InscricoesListagemDataSource extends DataGridSource {
-
+  final BuildContext context;
   List<DataGridRow> _dataGridRows = [];
 
-  InscricoesListagemDataSource(List<DTOInscricao> inscricoes) {
-    _dataGridRows =
-        inscricoes
-            .map<DataGridRow>(
-              (e) => DataGridRow(
+  InscricoesListagemDataSource(List<DTOInscricao> inscricoes, this.context) {
+    _dataGridRows = inscricoes
+        .map<DataGridRow>(
+          (e) => DataGridRow(
             cells: [
               DataGridCell<int>(columnName: 'id', value: e.id),
               DataGridCell<String>(columnName: 'nome', value: e.pessoa.nome),
-              DataGridCell<DTOPessoa>(columnName: 'cidade', value: e.pessoa),
-              DataGridCell<EnumTipoInscricao>(columnName: 'tipo', value: e.tipo),
-              DataGridCell<bool>(columnName: 'dormira', value: e.dormeEvento),
-              //DataGridCell<bool>(columnName: 'presente', value: e.),
+              DataGridCell<String>(columnName: 'cidade', value: '${e.pessoa.cidade ?? ""}/${e.pessoa.uf ?? ""}'),
+              DataGridCell<String>(columnName: 'tipo', value: e.tipo == EnumTipoInscricao.adulto ? 'Adulto' : 'Infantil'),
+              DataGridCell<String>(columnName: 'dormira', value: e.dormeEvento ? 'Sim' : 'Não'),
+              DataGridCell<DTOInscricao>(columnName: 'acoes', value: e),
             ],
           ),
         )
-            .toList();
+        .toList();
   }
 
   @override
@@ -32,15 +30,42 @@ class InscricoesListagemDataSource extends DataGridSource {
   @override
   DataGridRowAdapter? buildRow(DataGridRow row) {
     return DataGridRowAdapter(
-      cells:
-      row.getCells().map<Widget>((e) {
+      cells: row.getCells().map<Widget>((e) {
+        if (e.columnName == 'acoes') {
+          return Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.all(8.0),
+            child: IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                // TODO: Navegar para tela de cadastro com detalhes do pedido
+              },
+            ),
+          );
+        }
+
         return Container(
-          alignment: Alignment.center,
-          padding: EdgeInsets.all(8.0),
+          alignment: (e.columnName == 'id') ? Alignment.centerRight : (e.columnName == 'dormira' ? Alignment.center : Alignment.centerLeft),
+          padding: const EdgeInsets.all(8.0),
           child: Text(e.value.toString()),
         );
       }).toList(),
     );
   }
 
+  @override
+  Widget? buildTableSummaryCellWidget(
+      GridTableSummaryRow summaryRow,
+      GridSummaryColumn? summaryColumn,
+      RowColumnIndex rowColumnIndex,
+      String summaryValue) {
+    return Container(
+      padding: const EdgeInsets.all(15.0),
+      alignment: Alignment.centerLeft,
+      child: Text(
+        summaryValue,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+    );
+  }
 }

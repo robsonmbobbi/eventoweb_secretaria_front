@@ -14,7 +14,7 @@ class InscricoesWS {
 
     var authData = await _authRepository.get();
     _httpClient.setAuthToken(authData?.authToken ?? "");
-    var dataResponse = await _httpClient.get(path: "/inscricoes/listar/evento/$idEvento/situacao/$situacao");
+    var dataResponse = await _httpClient.get(path: "/inscricoes/listar/evento/$idEvento/situacao/${situacao.index}");
 
       if (dataResponse == null || dataResponse == "") {
         return [];
