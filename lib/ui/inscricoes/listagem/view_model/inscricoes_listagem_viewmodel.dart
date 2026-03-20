@@ -1,10 +1,10 @@
+import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_inscricao_listagem.dart';
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_situacao_inscricao.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/inscricoes/inscricoes_ws.dart';
 import 'package:eventoweb_secretaria_front/utils/command.dart';
 import 'package:eventoweb_secretaria_front/utils/result.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../../../data/models/inscricoes/dto_inscricao.dart';
 import '../../../event_shell/view_model/event_shell_viewmodel.dart';
 
 class InscricoesListagemViewModel extends ChangeNotifier {
@@ -12,7 +12,7 @@ class InscricoesListagemViewModel extends ChangeNotifier {
 
   final InscricoesWS inscricoesWS;
   final EventShellViewModel eventViewModel;
-  final List<DTOInscricao> inscricoes = [];
+  final List<DTOInscricaoListagem> inscricoes = [];
 
   late final Command1<void, EnumSituacaoInscricao> escolherSituacao;
   EnumSituacaoInscricao? get situacaoEscolhida => _situacaoEscolhida;

@@ -1,4 +1,4 @@
-import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_inscricao.dart';
+import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_inscricao_listagem.dart';
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_tipo_inscricao.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
@@ -7,17 +7,17 @@ class InscricoesListagemDataSource extends DataGridSource {
   final BuildContext context;
   List<DataGridRow> _dataGridRows = [];
 
-  InscricoesListagemDataSource(List<DTOInscricao> inscricoes, this.context) {
+  InscricoesListagemDataSource(List<DTOInscricaoListagem> inscricoes, this.context) {
     _dataGridRows = inscricoes
         .map<DataGridRow>(
           (e) => DataGridRow(
             cells: [
               DataGridCell<int>(columnName: 'id', value: e.id),
-              DataGridCell<String>(columnName: 'nome', value: e.pessoa.nome),
-              DataGridCell<String>(columnName: 'cidade', value: '${e.pessoa.cidade ?? ""}/${e.pessoa.uf ?? ""}'),
+              DataGridCell<String>(columnName: 'nome', value: e.nome),
+              DataGridCell<String>(columnName: 'cidade', value: '${e.cidade ?? ""}/${e.uf ?? ""}'),
               DataGridCell<String>(columnName: 'tipo', value: e.tipo == EnumTipoInscricao.adulto ? 'Adulto' : 'Infantil'),
-              DataGridCell<String>(columnName: 'dormira', value: e.dormeEvento ? 'Sim' : 'Não'),
-              DataGridCell<DTOInscricao>(columnName: 'acoes', value: e),
+              DataGridCell<String>(columnName: 'dormira', value: e.dormira ? 'Sim' : 'Não'),
+              DataGridCell<DTOInscricaoListagem>(columnName: 'acoes', value: e),
             ],
           ),
         )

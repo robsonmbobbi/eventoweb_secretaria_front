@@ -40,7 +40,7 @@ class _InscricoesListagemScreenState extends State<InscricoesListagemScreen> {
           widget.viewModel.escolherSituacao.clearResult();
 
           return MessagePanelWidget(
-            message: 'Ocorreu um problema!!\n${errorCmd.error}',
+            message: 'Ocorreu um problema!!!\n${errorCmd.error}',
             type: MessagePanelType.error,
           );
         }
@@ -68,10 +68,23 @@ class _InscricoesListagemScreenState extends State<InscricoesListagemScreen> {
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const Spacer(),
-                    _buildRadioOption(EnumSituacaoInscricao.limbo, 'Limbo'),
-                    _buildRadioOption(EnumSituacaoInscricao.pendente, 'Pendente'),
-                    _buildRadioOption(EnumSituacaoInscricao.aceita, 'Aceita'),
-                    _buildRadioOption(EnumSituacaoInscricao.rejeitada, 'Rejeitadas'),
+                    RadioGroup<EnumSituacaoInscricao>(
+                      groupValue: widget.viewModel.situacaoEscolhida,
+                      onChanged: (EnumSituacaoInscricao? newValue) {
+                        if (newValue != null) {
+                          widget.viewModel.escolherSituacao.execute(newValue);
+                        }
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildRadioOption(EnumSituacaoInscricao.limbo, 'Limbo'),
+                          _buildRadioOption(EnumSituacaoInscricao.pendente, 'Pendente'),
+                          _buildRadioOption(EnumSituacaoInscricao.aceita, 'Aceita'),
+                          _buildRadioOption(EnumSituacaoInscricao.rejeitada, 'Rejeitadas'),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -167,12 +180,6 @@ class _InscricoesListagemScreenState extends State<InscricoesListagemScreen> {
       children: [
         Radio<EnumSituacaoInscricao>(
           value: value,
-          groupValue: widget.viewModel.situacaoEscolhida,
-          onChanged: (EnumSituacaoInscricao? newValue) {
-            if (newValue != null) {
-              widget.viewModel.escolherSituacao.execute(newValue);
-            }
-          },
         ),
         Text(label),
         const SizedBox(width: 8),

@@ -1,7 +1,7 @@
+import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_inscricao_listagem.dart';
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_situacao_inscricao.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/ws_client.dart';
 
-import '../../models/inscricoes/dto_inscricao.dart';
 import '../security/auth_repository.dart';
 
 class InscricoesWS {
@@ -10,7 +10,7 @@ class InscricoesWS {
   final AuthRepository _authRepository;
   InscricoesWS(this._httpClient, this._authRepository) ;
 
-  Future<List<DTOInscricao>> listar(int idEvento, EnumSituacaoInscricao situacao) async {
+  Future<List<DTOInscricaoListagem>> listar(int idEvento, EnumSituacaoInscricao situacao) async {
 
     var authData = await _authRepository.get();
     _httpClient.setAuthToken(authData?.authToken ?? "");
@@ -19,7 +19,7 @@ class InscricoesWS {
       if (dataResponse == null || dataResponse == "") {
         return [];
       } else {
-        return List<DTOInscricao>.from(dataResponse.map((e) => DTOInscricao.fromJson(e)));
+        return List<DTOInscricaoListagem>.from(dataResponse.map((e) => DTOInscricaoListagem.fromJson(e)));
       }
   }
 }
