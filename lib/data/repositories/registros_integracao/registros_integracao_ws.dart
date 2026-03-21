@@ -1,5 +1,6 @@
 import '../../models/registros_integracao/dto_registro_integracao.dart';
-import '../../security/auth_repository.dart';
+import '../../models/registros_integracao/dto_registro_integracao_inclusao.dart';
+import '../security/auth_repository.dart';
 import '../ws_client.dart';
 
 class RegistrosIntegracaoWS {
@@ -19,5 +20,13 @@ class RegistrosIntegracaoWS {
       return List<DTORegistroIntegracao>.from(
           dataResponse.map((e) => DTORegistroIntegracao.fromJson(e)));
     }
+  }
+
+  Future<DTORegistroIntegracao> incluir(DTORegistroIntegracaoInclusao dto) async {
+    var authData = await _authRepository.get();
+    _httpClient.setAuthToken(authData?.authToken ?? "");
+    var dataResponse = await _httpClient.post(path: "/registrosintegracao/incluir", data: dto.toJson());
+
+    return DTORegistroIntegracao.fromJson(dataResponse);
   }
 }

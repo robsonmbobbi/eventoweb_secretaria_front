@@ -1,5 +1,6 @@
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_inscricao.dart';
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_inscricao_listagem.dart';
+import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_inscricao_pesquisa_pessoa.dart';
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_situacao_inscricao.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/ws_client.dart';
 
@@ -22,6 +23,21 @@ class InscricoesWS {
       } else {
         return List<DTOInscricaoListagem>.from(dataResponse.map((e) => DTOInscricaoListagem.fromJson(e)));
       }
+  }
+
+  Future<DTOInscricao> obterPorId(int idInscricao) async {
+    var authData = await _authRepository.get();
+    _httpClient.setAuthToken(authData?.authToken ?? "");
+    var dataResponse = await _httpClient.get(path: "/inscricoes/obter/$idInscricao");
+    return DTOInscricao.fromJson(dataResponse);
+  }
+
+  Future<DTOInscricaoPesquisaPessoa> pesquisar(int idEvento, String cpf) async {
+    var authData = await _authRepository.get();
+    _httpClient.setAuthToken(authData?.authToken ?? "");
+    var dataResponse = await _httpClient.get(path: "/inscricoes/pesquisar/evento/$idEvento/cpf/$cpf");
+
+    return DTOInscricaoPesquisaPessoa.fromJson(dataResponse);
   }
 
   Future<DTOInscricao> incluir(DTOInscricao inscricao) async {

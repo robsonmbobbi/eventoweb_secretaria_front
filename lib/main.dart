@@ -1,4 +1,9 @@
 import 'package:eventoweb_secretaria_front/data/repositories/events/events_ws.dart';
+import 'package:eventoweb_secretaria_front/data/repositories/financeiro/contas_ws.dart';
+import 'package:eventoweb_secretaria_front/data/repositories/financeiro/formas_pagamento_ws.dart';
+import 'package:eventoweb_secretaria_front/data/repositories/inscricoes/precos_inscricao_ws.dart';
+import 'package:eventoweb_secretaria_front/data/repositories/pedidos/pedidos_ws.dart';
+import 'package:eventoweb_secretaria_front/data/repositories/registros_integracao/registros_integracao_ws.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/security/auth_repository.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/version_app_repository.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/ws_client.dart';
@@ -33,6 +38,11 @@ void main() {
         Provider(create: (context) => AuthWS(context.read())),
         Provider(create: (context) => EventsWS(context.read(), context.read())),
         Provider(create: (context) => InscricoesWS(context.read(), context.read())),
+        Provider(create: (context) => PedidosWS(context.read(), context.read())),
+        Provider(create: (context) => RegistrosIntegracaoWS(context.read(), context.read())),
+        Provider(create: (context) => PrecosInscricaoWS(context.read(), context.read())),
+        Provider(create: (context) => FormasPagamentoWS(context.read(), context.read())),
+        Provider(create: (context) => ContasWS(context.read(), context.read())),
         ChangeNotifierProvider(
           create: (context) => AuthController(context.read(), context.read()),
         ),
@@ -52,7 +62,13 @@ void main() {
           create: (context) => EventShellViewModel(context.read()),
         ),
         ChangeNotifierProvider(
-          create: (context) => InscricoesListagemViewModel(eventViewModel: context.read(), inscricoesWS: context.read()),
+          create: (context) => InscricoesListagemViewModel(
+            eventViewModel: context.read(), 
+            inscricoesWS: context.read(),
+            pedidosWS: context.read(),
+            registrosIntegracaoWS: context.read(),
+            formasPagamentoWS: context.read(),
+          ),
         ),
       ],
       child: const SecretariaApp(),
