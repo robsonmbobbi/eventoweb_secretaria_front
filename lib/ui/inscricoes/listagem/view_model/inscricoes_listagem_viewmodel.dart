@@ -36,6 +36,7 @@ class InscricoesListagemViewModel extends ChangeNotifier {
   late final Command1<void, DTOInscricaoListagem?> selecionarInscricao;
   late final Command1<void, DTORegistroIntegracaoInclusao> incluirRegistroIntegracao;
   late final Command0<void> carregarFormasPagamento;
+  late final Command1<void, DTOInscricao> atualizarInscricao;
 
   EnumSituacaoInscricao? get situacaoEscolhida => _situacaoEscolhida;
   DTOInscricaoListagem? get inscricaoSelecionada => _inscricaoListagemSelecionada;
@@ -55,6 +56,7 @@ class InscricoesListagemViewModel extends ChangeNotifier {
     selecionarInscricao = Command1<void, DTOInscricaoListagem?>(_selecionarInscricao);
     incluirRegistroIntegracao = Command1<void, DTORegistroIntegracaoInclusao>(_incluirRegistroIntegracao);
     carregarFormasPagamento = Command0<void>(_carregarFormasPagamento);
+    atualizarInscricao = Command1<void, DTOInscricao>(_atualizarInscricao);
   }
 
   Future<Result<void>> _escolherSituacao(EnumSituacaoInscricao novaSituacao) async {
@@ -122,6 +124,33 @@ class InscricoesListagemViewModel extends ChangeNotifier {
   Future<Result<void>> _carregarFormasPagamento() async {
     try {
       _formasPagamento = await formasPagamentoWS.listar();
+      notifyListeners();
+      return Result.ok(null);
+    } on Exception catch (ex) {
+      return Result.error(ex);
+    }
+  }
+
+  Future<Result<void>> _atualizarInscricao(DTOInscricao inscricao) async {
+    try {
+      await inscricoesWS.atualizar(inscricao);
+      _inscricaoCompletaSelecionada = inscricao;
+      
+      // Atualizar na lista de listagem também
+      final index = inscricoes.indexWhere((element) => element.id == inscricao.id);
+      if (index != -1) {
+        inscricoes[index] = DTOInscricaoListagem(
+          id: inscricao.id,
+          nome: inscricao.pessoa.nome,
+          tipo: inscricao.tipo,
+          situacao: inscricao.situacao!,
+          cidade: inscricao.pessoa.cidade,
+          uf: inscricao.pessoa.uf,
+          dormira: inscricao.dormeEvento,
+          tipoParticipante: inscricao.tipoParticipante,
+        );
+      }
+
       notifyListeners();
       return Result.ok(null);
     } on Exception catch (ex) {

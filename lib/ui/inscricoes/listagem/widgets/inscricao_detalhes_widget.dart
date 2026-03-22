@@ -2,8 +2,10 @@ import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_tipo_insc
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_tipo_participante.dart';
 import 'package:eventoweb_secretaria_front/data/models/pedidos/enum_tipo_pedido.dart';
 import 'package:eventoweb_secretaria_front/ui/inscricoes/listagem/view_model/inscricoes_listagem_viewmodel.dart';
+import 'package:eventoweb_secretaria_front/ui/inscricoes/listagem/widgets/inscricao_form_dialog.dart';
 import 'package:eventoweb_secretaria_front/ui/inscricoes/listagem/widgets/integracao_card_widget.dart';
 import 'package:eventoweb_secretaria_front/ui/inscricoes/listagem/widgets/novo_registro_integracao_dialog.dart';
+import 'package:eventoweb_secretaria_front/utils/result.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -61,7 +63,29 @@ class InscricaoDetalhesWidget extends StatelessWidget {
                 icon: const Icon(Icons.edit),
                 tooltip: 'Editar Inscrição',
                 onPressed: () {
-                   // AÇÃO: Abrir janela de alteração dos dados 
+                   showDialog(
+                     context: context,
+                     barrierDismissible: false,
+                     builder: (context) => InscricaoFormDialog(
+                       idEvento: viewModel.eventViewModel.eventoEscolhido!.id!,
+                       idadeMinimaAdulto: viewModel.eventViewModel.eventoEscolhido!.idadeMinimaAdulto,
+                       inscricoesWS: viewModel.inscricoesWS,
+                       inscricao: inscricao,
+                       onSave: (inscricaoAtualizada) async {
+                         await viewModel.atualizarInscricao.execute(inscricaoAtualizada);
+                         final res = viewModel.atualizarInscricao.result;
+                         if (context.mounted) {
+                           if (res is OkCommand) {
+                             Navigator.pop(context);
+                           } else if (res is ErrorCommand) {
+                             ScaffoldMessenger.of(context).showSnackBar(
+                               SnackBar(content: Text('Erro ao atualizar: ${res.error}'))
+                             );
+                           }
+                         }
+                       },
+                     ),
+                   );
                 },
               ),
             ],
@@ -91,6 +115,11 @@ class InscricaoDetalhesWidget extends StatelessWidget {
              _buildSectionTitle(context, 'Responsável 1'),
              _buildInfoRow('Nome:', inscricao.responsavel1!.nome ?? ""),
              _buildInfoRow('CPF:', _formatCPF(inscricao.responsavel1!.cpf ?? "")),
+          ],
+          if (inscricao.responsavel2 != null) ...[
+             _buildSectionTitle(context, 'Responsável 2'),
+             _buildInfoRow('Nome:', inscricao.responsavel2!.nome ?? ""),
+             _buildInfoRow('CPF:', _formatCPF(inscricao.responsavel2!.cpf ?? "")),
           ],
 
           const SizedBox(height: 24),
@@ -154,7 +183,7 @@ class InscricaoDetalhesWidget extends StatelessWidget {
           if (integracoes.isEmpty)
             const Text('Nenhum registro de integração encontrado.')
           else
-            ...integracoes.map((reg) => IntegracaoCardWidget(registro: reg)).toList(),
+            ...integracoes.map((reg) => IntegracaoCardWidget(registro: reg)),
           
           const SizedBox(height: 16),
           if (pedido != null)

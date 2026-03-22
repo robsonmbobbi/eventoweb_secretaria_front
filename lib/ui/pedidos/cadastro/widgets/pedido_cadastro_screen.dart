@@ -1,6 +1,7 @@
+import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_inscricao.dart';
 import 'package:eventoweb_secretaria_front/ui/core/themes/theme_back_button.dart';
+import 'package:eventoweb_secretaria_front/ui/inscricoes/listagem/widgets/inscricao_form_dialog.dart';
 import 'package:eventoweb_secretaria_front/ui/pedidos/cadastro/view_model/pedido_cadastro_viewmodel.dart';
-import 'package:eventoweb_secretaria_front/ui/pedidos/cadastro/widgets/inscricao_wizard_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -54,7 +55,23 @@ class _PedidoCadastroScreenState extends State<PedidoCadastroScreen> {
                         showDialog(
                           context: context,
                           barrierDismissible: false,
-                          builder: (context) => InscricaoWizardDialog(viewModel: widget.viewModel),
+                          builder: (context) => InscricaoFormDialog(
+                            idEvento: widget.viewModel.eventViewModel.eventoEscolhido!.id!,
+                            idadeMinimaAdulto: widget.viewModel.eventViewModel.eventoEscolhido!.idadeMinimaAdulto,
+                            inscricoesWS: widget.viewModel.inscricoesWS,
+                            onSave: (inscricao) async {
+                              final result = await widget.viewModel.incluirInscricao.execute(inscricao);
+                              if (context.mounted) {
+                                if (result.isOk) {
+                                  Navigator.pop(context);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Erro ao incluir: ${result.asError.error}'))
+                                  );
+                                }
+                              }
+                            },
+                          ),
                         );
                       },
                       icon: const Icon(Icons.person_add),

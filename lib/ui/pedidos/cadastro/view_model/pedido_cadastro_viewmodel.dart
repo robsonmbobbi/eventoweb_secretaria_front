@@ -31,6 +31,7 @@ class PedidoCadastroViewModel extends ChangeNotifier {
   
   late final Command1<void, String> pesquisarCPF;
   late final Command0<void> carregarFormasPagamento;
+  late final Command1<DTOInscricao, DTOInscricao> incluirInscricao;
 
   PedidoCadastroViewModel({
     required this.inscricoesWS,
@@ -41,6 +42,7 @@ class PedidoCadastroViewModel extends ChangeNotifier {
   }) {
     pesquisarCPF = Command1<void, String>(_pesquisarCPF);
     carregarFormasPagamento = Command0<void>(_carregarFormasPagamento);
+    incluirInscricao = Command1<DTOInscricao, DTOInscricao>(_incluirInscricao);
   }
 
   Future<Result<void>> _pesquisarCPF(String cpf) async {
@@ -66,6 +68,17 @@ class PedidoCadastroViewModel extends ChangeNotifier {
     }
   }
 
+  Future<Result<DTOInscricao>> _incluirInscricao(DTOInscricao inscricao) async {
+    try {
+      final resultado = await inscricoesWS.incluir(inscricao);
+      inscricoesNoPedido.add(resultado);
+      notifyListeners();
+      return Result.ok(resultado);
+    } catch (e) {
+      return Result.error(Exception(e));
+    }
+  }
+
   bool isInfantil(DateTime dataNascimento) {
     final hoje = DateTime.now();
     int idade = hoje.year - dataNascimento.year;
@@ -78,10 +91,5 @@ class PedidoCadastroViewModel extends ChangeNotifier {
   double calcularValorInscricao(DTOInscricao inscricao, DTOPrecoInscricao preco, DTOFormaPagamento forma) {
      final valorForma = preco.valores.firstWhere((v) => v.forma.id == forma.id, orElse: () => preco.valores.first);
      return valorForma.preco;
-  }
-
-  void adicionarInscricao(DTOInscricao inscricao) {
-    inscricoesNoPedido.add(inscricao);
-    notifyListeners();
   }
 }
