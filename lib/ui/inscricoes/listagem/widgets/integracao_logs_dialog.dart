@@ -18,7 +18,7 @@ class IntegracaoLogsDialog extends StatelessWidget {
             : ListView.separated(
                 shrinkWrap: true,
                 itemCount: logs.length,
-                separatorBuilder: (_, __) => const Divider(),
+                separatorBuilder: (_, _) => const Divider(),
                 itemBuilder: (context, index) {
                   final log = logs[index];
                   return ListTile(

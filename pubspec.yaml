@@ -32,6 +32,8 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
       sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   dio: ^5.8.0+1
   url_launcher: ^6.3.2

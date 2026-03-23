@@ -1,3 +1,4 @@
+import '../../models/registros_integracao/dto_consulta_registro_integracao.dart';
 import '../../models/registros_integracao/dto_registro_integracao.dart';
 import '../../models/registros_integracao/dto_registro_integracao_inclusao.dart';
 import '../security/auth_repository.dart';
@@ -28,5 +29,17 @@ class RegistrosIntegracaoWS {
     var dataResponse = await _httpClient.post(path: "/registrosintegracao/incluir", data: dto.toJson());
 
     return DTORegistroIntegracao.fromJson(dataResponse);
+  }
+
+  Future<DTOConsultaRegistroIntegracao?> consultar(int id) async {
+    var authData = await _authRepository.get();
+    _httpClient.setAuthToken(authData?.authToken ?? "");
+    var dataResponse = await _httpClient.get(path: "/registrosintegracao/consultar/$id");
+
+    if (dataResponse == null || dataResponse == "") {
+      return null;
+    } else {
+      return DTOConsultaRegistroIntegracao.fromJson(dataResponse);
+    }
   }
 }

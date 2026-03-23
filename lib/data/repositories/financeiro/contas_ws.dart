@@ -1,4 +1,5 @@
 import 'package:eventoweb_secretaria_front/data/repositories/ws_client.dart';
+import 'package:eventoweb_secretaria_front/data/models/financeiro/dto_liquidacao_conta.dart';
 import '../security/auth_repository.dart';
 
 class ContasWS {
@@ -7,17 +8,13 @@ class ContasWS {
 
   ContasWS(this._httpClient, this._authRepository);
 
-  Future<void> liquidar(int idConta, double valorPago, double valorDesconto, double valorAcrescimo) async {
+  Future<void> liquidar(DTOLiquidacaoConta dto) async {
     var authData = await _authRepository.get();
     _httpClient.setAuthToken(authData?.authToken ?? "");
     
     await _httpClient.post(
-      path: "/contas/$idConta/liquidar", 
-      data: {
-        'valorPago': valorPago,
-        'valorDesconto': valorDesconto,
-        'valorAcrescimo': valorAcrescimo,
-      }
+      path: "/contas/liquidar", 
+      data: dto.toJson()
     );
   }
 }

@@ -57,12 +57,12 @@ class InscricoesWS {
   Future<void> aceitar(int idInscricao) async {
     var authData = await _authRepository.get();
     _httpClient.setAuthToken(authData?.authToken ?? "");
-    await _httpClient.post(path: "/inscricoes/aceitar/$idInscricao", data: null);
+    await _httpClient.put(path: "/inscricoes/aceitar/$idInscricao", data: null);
   }
 
   Future<void> rejeitar(int idInscricao) async {
     var authData = await _authRepository.get();
     _httpClient.setAuthToken(authData?.authToken ?? "");
-    await _httpClient.post(path: "/inscricoes/rejeitar/$idInscricao", data: null);
+    await _httpClient.put(path: "/inscricoes/rejeitar/$idInscricao", data: null);
   }
 }

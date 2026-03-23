@@ -1,5 +1,6 @@
 import 'package:eventoweb_secretaria_front/data/repositories/events/events_ws.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/financeiro/contas_ws.dart';
+import 'package:eventoweb_secretaria_front/data/repositories/financeiro/contas_bancarias_ws.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/financeiro/formas_pagamento_ws.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/inscricoes/precos_inscricao_ws.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/pedidos/pedidos_ws.dart';
@@ -19,6 +20,7 @@ import 'package:eventoweb_secretaria_front/routing/router.dart';
 import 'package:eventoweb_secretaria_front/ui/shell/view_model/shell_viewmodel.dart';
 import 'package:eventoweb_secretaria_front/ui/usuarios/listagem/view_model/usuarios_listagem_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -43,6 +45,7 @@ void main() {
         Provider(create: (context) => PrecosInscricaoWS(context.read(), context.read())),
         Provider(create: (context) => FormasPagamentoWS(context.read(), context.read())),
         Provider(create: (context) => ContasWS(context.read(), context.read())),
+        Provider(create: (context) => ContasBancariasWS(context.read(), context.read())),
         ChangeNotifierProvider(
           create: (context) => AuthController(context.read(), context.read()),
         ),
@@ -68,6 +71,8 @@ void main() {
             pedidosWS: context.read(),
             registrosIntegracaoWS: context.read(),
             formasPagamentoWS: context.read(),
+            contasWS: context.read(),
+            contasBancariasWS: context.read(),
           ),
         ),
       ],
@@ -91,6 +96,12 @@ class SecretariaApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'EventoWeb - Secretaria',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate
+      ],
+      supportedLocales: const [Locale('pt', 'BR')],
       theme: ThemeData(
         colorScheme: colorScheme,
         appBarTheme: AppBarTheme(

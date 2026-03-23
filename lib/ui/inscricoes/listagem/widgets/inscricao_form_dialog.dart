@@ -2,12 +2,56 @@ import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_inscricao.
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_pessoa.dart';
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_responsavel.dart';
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_sexo.dart';
+import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_situacao_inscricao.dart';
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_situacao_pesquisa_pessoa.dart';
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_tipo_inscricao.dart';
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_tipo_participante.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/inscricoes/inscricoes_ws.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+
+// Lista de estados brasileiros
+const List<String> estadosBrasileiros = [
+  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
+  'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
+  'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+];
+
+// Funções de validação e formatação
+bool _isValidCPF(String cpf) {
+  cpf = cpf.replaceAll(RegExp(r'\D'), '');
+  if (cpf.length != 11) return false;
+  if (RegExp(r'^(\d)\1{10}$').hasMatch(cpf)) return false;
+  
+  int sum = 0;
+  int remainder;
+  for (int i = 1; i <= 9; i++) {
+    sum += int.parse(cpf.substring(i - 1, i)) * (11 - i);
+  }
+  remainder = (sum * 10) % 11;
+  if (remainder == 10 || remainder == 11) remainder = 0;
+  if (remainder != int.parse(cpf.substring(9, 10))) return false;
+  
+  sum = 0;
+  for (int i = 1; i <= 10; i++) {
+    sum += int.parse(cpf.substring(i - 1, i)) * (12 - i);
+  }
+  remainder = (sum * 10) % 11;
+  if (remainder == 10 || remainder == 11) remainder = 0;
+  if (remainder != int.parse(cpf.substring(10, 11))) return false;
+  
+  return true;
+}
+
+bool _isValidEmail(String email) {
+  return RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(email);
+}
+
+bool _isValidPhone(String phone) {
+  phone = phone.replaceAll(RegExp(r'\D'), '');
+  return phone.length == 11 || phone.length == 10;
+}
 
 class InscricaoFormDialog extends StatefulWidget {
   final DTOInscricao? inscricao; // Se nulo, é inclusão
@@ -63,6 +107,9 @@ class _InscricaoFormDialogState extends State<InscricaoFormDialog> {
   bool _usaAdocante = false;
   EnumSexo? _sexo;
   EnumTipoParticipante? _tipoParticipante;
+
+  // Rastreia inscrição em limbo encontrada durante pesquisa (estado de inclusão)
+  DTOInscricao? _inscricaoEmLimbo;
 
   bool get _isEdition => widget.inscricao != null;
 
@@ -188,6 +235,10 @@ class _InscricaoFormDialogState extends State<InscricaoFormDialog> {
             controller: _cpfController,
             decoration: const InputDecoration(labelText: 'Informe o CPF*'),
             keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              _CPFInputFormatter(),
+            ],
           ),
         ),
         Step(
@@ -230,20 +281,61 @@ class _InscricaoFormDialogState extends State<InscricaoFormDialog> {
           ),
           Row(
             children: [
-              Expanded(child: TextFormField(controller: _emailController, decoration: const InputDecoration(labelText: 'E-mail*'), validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null)),
+              Expanded(
+                child: TextFormField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(labelText: 'E-mail*'),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'E-mail é obrigatório';
+                    if (!_isValidEmail(v)) return 'E-mail inválido';
+                    return null;
+                  },
+                ),
+              ),
               const SizedBox(width: 16),
-              Expanded(child: TextFormField(controller: _celularController, decoration: const InputDecoration(labelText: 'Celular*'), validator: (v) => v == null || v.isEmpty ? 'Obrigatório' : null)),
+              Expanded(
+                child: TextFormField(
+                  controller: _celularController,
+                  decoration: const InputDecoration(labelText: 'Celular*'),
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    _PhoneInputFormatter(),
+                  ],
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Celular é obrigatório';
+                    if (!_isValidPhone(v)) return 'Celular inválido (10 ou 11 dígitos)';
+                    return null;
+                  },
+                ),
+              ),
             ],
           ),
           Row(
             children: [
-              Expanded(child: TextFormField(controller: _cidadeController, decoration: const InputDecoration(labelText: 'Cidade'))),
+              Expanded(
+                child: TextFormField(
+                  controller: _cidadeController,
+                  decoration: const InputDecoration(labelText: 'Cidade*'),
+                  validator: (v) => v == null || v.isEmpty ? 'Cidade é obrigatória' : null,
+                ),
+              ),
               const SizedBox(width: 8),
-              Expanded(child: TextFormField(controller: _ufController, decoration: const InputDecoration(labelText: 'UF'))),
+              Expanded(
+                child: DropdownButtonFormField<String>(
+                  value: _ufController.text.isEmpty ? null : _ufController.text,
+                  decoration: const InputDecoration(labelText: 'UF*'),
+                  items: estadosBrasileiros
+                      .map((uf) => DropdownMenuItem(value: uf, child: Text(uf)))
+                      .toList(),
+                  onChanged: (v) => setState(() => _ufController.text = v ?? ''),
+                  validator: (v) => v == null || v.isEmpty ? 'UF é obrigatório' : null,
+                ),
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: DropdownButtonFormField<EnumSexo>(
-                  value: _sexo,
+                  initialValue: _sexo,
                   decoration: const InputDecoration(labelText: 'Sexo'),
                   items: EnumSexo.values.map((s) => DropdownMenuItem(value: s, child: Text(s.name))).toList(),
                   onChanged: (v) => setState(() => _sexo = v),
@@ -273,7 +365,7 @@ class _InscricaoFormDialogState extends State<InscricaoFormDialog> {
           if (!_isInfantil()) ...[
             TextFormField(controller: _instituicaoController, decoration: const InputDecoration(labelText: 'Instituição Espírita')),
             DropdownButtonFormField<EnumTipoParticipante>(
-              value: _tipoParticipante,
+              initialValue: _tipoParticipante,
               decoration: const InputDecoration(labelText: 'Tipo Participante'),
               items: EnumTipoParticipante.values.map((t) => DropdownMenuItem(value: t, child: Text(t.name))).toList(),
               onChanged: (v) => setState(() => _tipoParticipante = v),
@@ -306,8 +398,19 @@ class _InscricaoFormDialogState extends State<InscricaoFormDialog> {
                 onPressed: () => found ? _limparResponsavel(cpfCtrl, nomeCtrl, setFound) : _buscarResponsavel(cpfCtrl, nomeCtrl, setFound),
               ),
             ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              _CPFInputFormatter(),
+            ],
             readOnly: found,
-            validator: (v) => (index == 1 && _isInfantil() && (v == null || v.isEmpty)) ? 'Obrigatório' : null,
+            validator: (v) {
+              if (index == 1 && _isInfantil()) {
+                if (v == null || v.isEmpty) return 'Obrigatório';
+                if (!_isValidCPF(v)) return 'CPF inválido';
+              }
+              return null;
+            },
           ),
         ),
         const SizedBox(width: 16),
@@ -388,34 +491,105 @@ class _InscricaoFormDialogState extends State<InscricaoFormDialog> {
 
   void _nextStep() async {
     if (_currentStep == 0) {
-      if (_cpfController.text.isEmpty) return;
+      // Validar CPF
+      String cpfLimpo = _cpfController.text.replaceAll(RegExp(r'\D'), '');
+      if (cpfLimpo.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('CPF é obrigatório')),
+          );
+        }
+        return;
+      }
+      
+      if (!_isValidCPF(cpfLimpo)) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('CPF inválido')),
+          );
+        }
+        return;
+      }
+      
+      // Pesquisar CPF no servidor
       setState(() => _isLoading = true);
       try {
-        final res = await widget.inscricoesWS.pesquisar(widget.idEvento, _cpfController.text);
+        final res = await widget.inscricoesWS.pesquisar(widget.idEvento, cpfLimpo);
         setState(() => _isLoading = false);
-        if (res.situacao == EnumSituacaoPesquisaPessoa.inscricaoRealizada) {
-          if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Pessoa já possui inscrição.')));
+        
+        if (res == null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Erro ao pesquisar CPF')),
+            );
+          }
           return;
         }
-        if (res.pessoa != null) {
+        
+        // Verificar situação da inscrição
+        if (res.situacao == EnumSituacaoPesquisaPessoa.inscricaoRealizada) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Já existe uma inscrição no sistema para este CPF')),
+            );
+          }
+          return;
+        }
+        
+        // Se for inscricaoNoLimbo ou inscricaoNaoExiste, prosseguir carregando dados
+        if (res.situacao == EnumSituacaoPesquisaPessoa.inscricaoNoLimbo && res.inscricao != null) {
+          // Guardar inscrição em limbo para atualizar depois
+          _inscricaoEmLimbo = res.inscricao;
+          
+          // Carregar todos os dados da inscrição em limbo
+          _nomeController.text = res.inscricao!.pessoa.nome;
+          _emailController.text = res.inscricao!.pessoa.email;
+          _celularController.text = res.inscricao!.pessoa.celular;
+          _cidadeController.text = res.inscricao!.pessoa.cidade ?? '';
+          _ufController.text = res.inscricao!.pessoa.uf ?? '';
+          _sexo = res.inscricao!.pessoa.sexo;
+          _ehVegetariano = res.inscricao!.pessoa.ehVegetariano;
+          _ehDiabetico = res.inscricao!.pessoa.ehDiabetico;
+          _usaAdocante = res.inscricao!.pessoa.usaAdocanteDiariamente;
+          _alergiasController.text = res.inscricao!.pessoa.alergiaAlimentos ?? '';
+          
+          if (res.inscricao!.pessoa.dataNascimento != null) {
+            _dataNascimento = res.inscricao!.pessoa.dataNascimento;
+            _dataNascimentoController.text = DateFormat('dd/MM/yyyy').format(_dataNascimento!);
+          }
+        } else if (res.situacao == EnumSituacaoPesquisaPessoa.inscricaoNaoExiste && res.pessoa != null) {
+          // Carregar dados da pessoa se retornou
           _nomeController.text = res.pessoa!.nome;
           _emailController.text = res.pessoa!.email;
           _celularController.text = res.pessoa!.celular;
           _cidadeController.text = res.pessoa!.cidade ?? '';
           _ufController.text = res.pessoa!.uf ?? '';
           _sexo = res.pessoa!.sexo;
+          
           if (res.pessoa!.dataNascimento != null) {
             _dataNascimento = res.pessoa!.dataNascimento;
             _dataNascimentoController.text = DateFormat('dd/MM/yyyy').format(_dataNascimento!);
           }
         }
+        
         setState(() => _currentStep++);
       } catch (e) {
         setState(() => _isLoading = false);
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao pesquisar: $e')));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao pesquisar: $e')),
+          );
+        }
       }
     } else if (_currentStep == 1) {
-      if (_dataNascimento == null) return;
+      if (_dataNascimento == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data de nascimento é obrigatória')),
+          );
+        }
+        return;
+      }
       setState(() => _currentStep++);
     } else {
       _salvar();
@@ -430,10 +604,10 @@ class _InscricaoFormDialogState extends State<InscricaoFormDialog> {
     if (_formKey.currentState!.validate()) {
       final novaPessoa = DTOPessoa(
         nome: _nomeController.text,
-        cpf: _cpfController.text,
+        cpf: _cpfController.text.replaceAll(RegExp(r'\D'), ''),
         dataNascimento: _dataNascimento,
         email: _emailController.text,
-        celular: _celularController.text,
+        celular: _celularController.text.replaceAll(RegExp(r'\D'), ''),
         cidade: _cidadeController.text,
         uf: _ufController.text,
         sexo: _sexo,
@@ -443,22 +617,84 @@ class _InscricaoFormDialogState extends State<InscricaoFormDialog> {
         alergiaAlimentos: _alergiasController.text,
       );
 
-      final novaInscricao = (_isEdition ? widget.inscricao! : DTOInscricao(
-        idEvento: widget.idEvento,
-        tipo: _isInfantil() ? EnumTipoInscricao.infantil : EnumTipoInscricao.adulto,
-        pessoa: novaPessoa,
-      )).copyWith(
+      // Decidir se vai atualizar inscrição em limbo ou criar nova
+      final baseInscricao = _isEdition 
+          ? widget.inscricao!
+          : (_inscricaoEmLimbo ?? DTOInscricao(
+              idEvento: widget.idEvento,
+              tipo: _isInfantil() ? EnumTipoInscricao.infantil : EnumTipoInscricao.adulto,
+              pessoa: novaPessoa,
+              situacao: EnumSituacaoInscricao.limbo,
+            ));
+
+      final novaInscricao = baseInscricao.copyWith(
         pessoa: novaPessoa,
         nomeCracha: _nomeCrachaController.text,
         dormeEvento: _dormeEvento,
         instituicoesEspiritasFrequenta: !_isInfantil() ? _instituicaoController.text : null,
         tipoParticipante: _tipoParticipante,
         observacoes: _observacoesController.text,
-        responsavel1: _resp1Found ? DTOResponsavel(idInscricao: widget.inscricao?.id ?? 0, cpf: _resp1CpfController.text, nome: _resp1NomeController.text) : null,
-        responsavel2: _resp2Found ? DTOResponsavel(idInscricao: widget.inscricao?.id ?? 0, cpf: _resp2CpfController.text, nome: _resp2NomeController.text) : null,
+        responsavel1: _resp1Found ? DTOResponsavel(idInscricao: baseInscricao.id ?? 0, cpf: _resp1CpfController.text.replaceAll(RegExp(r'\D'), ''), nome: _resp1NomeController.text) : null,
+        responsavel2: _resp2Found ? DTOResponsavel(idInscricao: baseInscricao.id ?? 0, cpf: _resp2CpfController.text.replaceAll(RegExp(r'\D'), ''), nome: _resp2NomeController.text) : null,
       );
-
+     
       widget.onSave(novaInscricao);
     }
+  }
+}
+
+// Formatar de entrada para CPF (XXX.XXX.XXX-XX)
+class _CPFInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final text = newValue.text.replaceAll(RegExp(r'\D'), '');
+    
+    if (text.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+    
+    final buffer = StringBuffer();
+    for (int i = 0; i < text.length; i++) {
+      if (i == 3 || i == 6) {
+        buffer.write('.');
+      } else if (i == 9) {
+        buffer.write('-');
+      }
+      buffer.write(text[i]);
+    }
+    
+    return newValue.copyWith(
+      text: buffer.toString(),
+      selection: TextSelection.collapsed(offset: buffer.toString().length),
+    );
+  }
+}
+
+// Formatar de entrada para telefone ((XX) XXXXX-XXXX)
+class _PhoneInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    final text = newValue.text.replaceAll(RegExp(r'\D'), '');
+    
+    if (text.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+    
+    final buffer = StringBuffer();
+    for (int i = 0; i < text.length; i++) {
+      if (i == 0) {
+        buffer.write('(');
+      } else if (i == 2) {
+        buffer.write(') ');
+      } else if (i == 7) {
+        buffer.write('-');
+      }
+      buffer.write(text[i]);
+    }
+    
+    return newValue.copyWith(
+      text: buffer.toString(),
+      selection: TextSelection.collapsed(offset: buffer.toString().length),
+    );
   }
 }

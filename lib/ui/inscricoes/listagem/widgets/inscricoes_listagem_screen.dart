@@ -29,8 +29,8 @@ class _InscricoesListagemScreenState extends State<InscricoesListagemScreen> {
   void initState() {
     _controller = MultiSplitViewController(
       areas: [
-        Area(size: 400, min: 200),
-        Area(min: 300),
+        Area(flex: 2),
+        Area(flex: 1),
       ],
     );
     Future.microtask(() {
@@ -208,14 +208,19 @@ class _InscricoesListagemScreenState extends State<InscricoesListagemScreen> {
   }
 
   Widget _buildSituacaoRadios() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildRadioOption(EnumSituacaoInscricao.limbo, 'Limbo'),
-        _buildRadioOption(EnumSituacaoInscricao.pendente, 'Pendente'),
-        _buildRadioOption(EnumSituacaoInscricao.aceita, 'Aceita'),
-        _buildRadioOption(EnumSituacaoInscricao.rejeitada, 'Rejeitadas'),
-      ],
+
+    return RadioGroup<EnumSituacaoInscricao>(
+      onChanged: (value) => widget.viewModel.escolherSituacao.execute(value ?? EnumSituacaoInscricao.pendente),
+      groupValue: widget.viewModel.situacaoEscolhida,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildRadioOption(EnumSituacaoInscricao.limbo, 'Limbo'),
+          _buildRadioOption(EnumSituacaoInscricao.pendente, 'Pendente'),
+          _buildRadioOption(EnumSituacaoInscricao.aceita, 'Aceita'),
+          _buildRadioOption(EnumSituacaoInscricao.rejeitada, 'Rejeitadas'),
+        ],
+      )
     );
   }
 

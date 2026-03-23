@@ -76,7 +76,7 @@ class _NovoRegistroIntegracaoDialogState extends State<NovoRegistroIntegracaoDia
                   },
                 ),
                 DropdownButtonFormField<DTOFormaPagamento>(
-                  value: _formaSelecionada,
+                  initialValue: _formaSelecionada,
                   decoration: const InputDecoration(labelText: 'Forma de Pagamento'),
                   items: widget.viewModel.formasPagamento.map((f) {
                     return DropdownMenuItem(

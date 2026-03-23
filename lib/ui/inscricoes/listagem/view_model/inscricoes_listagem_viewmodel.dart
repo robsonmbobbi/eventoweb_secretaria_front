@@ -5,6 +5,8 @@ import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_situacao_
 import 'package:eventoweb_secretaria_front/data/models/pedidos/dto_pedido.dart';
 import 'package:eventoweb_secretaria_front/data/models/registros_integracao/dto_registro_integracao.dart';
 import 'package:eventoweb_secretaria_front/data/models/registros_integracao/dto_registro_integracao_inclusao.dart';
+import 'package:eventoweb_secretaria_front/data/repositories/financeiro/contas_ws.dart';
+import 'package:eventoweb_secretaria_front/data/repositories/financeiro/contas_bancarias_ws.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/financeiro/formas_pagamento_ws.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/inscricoes/inscricoes_ws.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/pedidos/pedidos_ws.dart';
@@ -22,6 +24,8 @@ class InscricoesListagemViewModel extends ChangeNotifier {
   final PedidosWS pedidosWS;
   final RegistrosIntegracaoWS registrosIntegracaoWS;
   final FormasPagamentoWS formasPagamentoWS;
+  final ContasWS contasWS;
+  final ContasBancariasWS contasBancariasWS;
   final EventShellViewModel eventViewModel;
   
   final List<DTOInscricaoListagem> inscricoes = [];
@@ -37,6 +41,8 @@ class InscricoesListagemViewModel extends ChangeNotifier {
   late final Command1<void, DTORegistroIntegracaoInclusao> incluirRegistroIntegracao;
   late final Command0<void> carregarFormasPagamento;
   late final Command1<void, DTOInscricao> atualizarInscricao;
+  late final Command1<void, int> aceitarInscricao;
+  late final Command1<void, int> rejeitarInscricao;
 
   EnumSituacaoInscricao? get situacaoEscolhida => _situacaoEscolhida;
   DTOInscricaoListagem? get inscricaoSelecionada => _inscricaoListagemSelecionada;
@@ -50,6 +56,8 @@ class InscricoesListagemViewModel extends ChangeNotifier {
     required this.pedidosWS,
     required this.registrosIntegracaoWS,
     required this.formasPagamentoWS,
+    required this.contasWS,
+    required this.contasBancariasWS,
     required this.eventViewModel,
   }) {
     escolherSituacao = Command1<void, EnumSituacaoInscricao>(_escolherSituacao);
@@ -57,6 +65,8 @@ class InscricoesListagemViewModel extends ChangeNotifier {
     incluirRegistroIntegracao = Command1<void, DTORegistroIntegracaoInclusao>(_incluirRegistroIntegracao);
     carregarFormasPagamento = Command0<void>(_carregarFormasPagamento);
     atualizarInscricao = Command1<void, DTOInscricao>(_atualizarInscricao);
+    aceitarInscricao = Command1<void, int>(_aceitarInscricao);
+    rejeitarInscricao = Command1<void, int>(_rejeitarInscricao);
   }
 
   Future<Result<void>> _escolherSituacao(EnumSituacaoInscricao novaSituacao) async {
@@ -151,6 +161,60 @@ class InscricoesListagemViewModel extends ChangeNotifier {
         );
       }
 
+      notifyListeners();
+      return Result.ok(null);
+    } on Exception catch (ex) {
+      return Result.error(ex);
+    }
+  }
+
+  Future<Result<void>> _aceitarInscricao(int idInscricao) async {
+    try {
+      await inscricoesWS.aceitar(idInscricao);
+      
+      // Recarregar lista de inscrições no grid
+      if (_situacaoEscolhida != null) {
+        inscricoes
+            ..clear()
+            ..addAll(await inscricoesWS.listar(
+              eventViewModel.eventoEscolhido!.id!, 
+              _situacaoEscolhida!
+            ));
+      }
+      
+      // Limpar seleção
+      _inscricaoListagemSelecionada = null;
+      _inscricaoCompletaSelecionada = null;
+      _pedidoDaInscricaoSelecionada = null;
+      _registrosIntegracao = [];
+      
+      notifyListeners();
+      return Result.ok(null);
+    } on Exception catch (ex) {
+      return Result.error(ex);
+    }
+  }
+
+  Future<Result<void>> _rejeitarInscricao(int idInscricao) async {
+    try {
+      await inscricoesWS.rejeitar(idInscricao);
+      
+      // Recarregar lista de inscrições no grid
+      if (_situacaoEscolhida != null) {
+        inscricoes
+            ..clear()
+            ..addAll(await inscricoesWS.listar(
+              eventViewModel.eventoEscolhido!.id!, 
+              _situacaoEscolhida!
+            ));
+      }
+      
+      // Limpar seleção
+      _inscricaoListagemSelecionada = null;
+      _inscricaoCompletaSelecionada = null;
+      _pedidoDaInscricaoSelecionada = null;
+      _registrosIntegracao = [];
+      
       notifyListeners();
       return Result.ok(null);
     } on Exception catch (ex) {

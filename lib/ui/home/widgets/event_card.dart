@@ -108,7 +108,6 @@ class _InfoRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
-    super.key,
   });
 
   @override

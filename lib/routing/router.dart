@@ -18,7 +18,7 @@ class GenerationRouter {
 
   static GlobalKey<NavigatorState> navigatorKey = GlobalKey();
 
-  GenerationRouter(this._authController) {}
+  GenerationRouter(this._authController);
 
   GoRouter generate() {
     return GoRouter(

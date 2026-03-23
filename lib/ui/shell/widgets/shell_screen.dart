@@ -1,7 +1,6 @@
 import 'package:eventoweb_secretaria_front/ui/core/themes/theme_button_menu.dart';
 import 'package:eventoweb_secretaria_front/ui/shell/view_model/shell_viewmodel.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/link.dart';
 
 class ShellScreen extends StatelessWidget {
   final Widget child;
