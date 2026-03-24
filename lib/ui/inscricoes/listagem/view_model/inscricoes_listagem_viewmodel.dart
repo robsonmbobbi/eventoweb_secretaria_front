@@ -3,6 +3,7 @@ import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_inscricao.
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_inscricao_listagem.dart';
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_situacao_inscricao.dart';
 import 'package:eventoweb_secretaria_front/data/models/pedidos/dto_pedido.dart';
+import 'package:eventoweb_secretaria_front/data/models/registros_integracao/dto_consulta_registro_integracao.dart';
 import 'package:eventoweb_secretaria_front/data/models/registros_integracao/dto_registro_integracao.dart';
 import 'package:eventoweb_secretaria_front/data/models/registros_integracao/dto_registro_integracao_inclusao.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/financeiro/contas_ws.dart';
@@ -35,6 +36,7 @@ class InscricoesListagemViewModel extends ChangeNotifier {
   DTOPedido? _pedidoDaInscricaoSelecionada;
   List<DTORegistroIntegracao> _registrosIntegracao = [];
   List<DTOFormaPagamento> _formasPagamento = [];
+  DTOConsultaRegistroIntegracao? _consultaRegistroSelecionada;
 
   late final Command1<void, EnumSituacaoInscricao> escolherSituacao;
   late final Command1<void, DTOInscricaoListagem?> selecionarInscricao;
@@ -43,6 +45,7 @@ class InscricoesListagemViewModel extends ChangeNotifier {
   late final Command1<void, DTOInscricao> atualizarInscricao;
   late final Command1<void, int> aceitarInscricao;
   late final Command1<void, int> rejeitarInscricao;
+  late final Command1<void, int> consultarRegistroIntegracao;
 
   EnumSituacaoInscricao? get situacaoEscolhida => _situacaoEscolhida;
   DTOInscricaoListagem? get inscricaoSelecionada => _inscricaoListagemSelecionada;
@@ -50,6 +53,7 @@ class InscricoesListagemViewModel extends ChangeNotifier {
   DTOPedido? get pedidoDaInscricaoSelecionada => _pedidoDaInscricaoSelecionada;
   List<DTORegistroIntegracao> get registrosIntegracao => _registrosIntegracao;
   List<DTOFormaPagamento> get formasPagamento => _formasPagamento;
+  DTOConsultaRegistroIntegracao? get consultaRegistroSelecionada => _consultaRegistroSelecionada;
 
   InscricoesListagemViewModel({
     required this.inscricoesWS, 
@@ -67,6 +71,7 @@ class InscricoesListagemViewModel extends ChangeNotifier {
     atualizarInscricao = Command1<void, DTOInscricao>(_atualizarInscricao);
     aceitarInscricao = Command1<void, int>(_aceitarInscricao);
     rejeitarInscricao = Command1<void, int>(_rejeitarInscricao);
+    consultarRegistroIntegracao = Command1<void, int>(_consultarRegistroIntegracao);
   }
 
   Future<Result<void>> _escolherSituacao(EnumSituacaoInscricao novaSituacao) async {
@@ -215,6 +220,16 @@ class InscricoesListagemViewModel extends ChangeNotifier {
       _pedidoDaInscricaoSelecionada = null;
       _registrosIntegracao = [];
       
+      notifyListeners();
+      return Result.ok(null);
+    } on Exception catch (ex) {
+      return Result.error(ex);
+    }
+  }
+
+  Future<Result<void>> _consultarRegistroIntegracao(int idRegistro) async {
+    try {
+      _consultaRegistroSelecionada = await registrosIntegracaoWS.consultar(idRegistro);
       notifyListeners();
       return Result.ok(null);
     } on Exception catch (ex) {

@@ -206,7 +206,7 @@ class InscricaoDetalhesWidget extends StatelessWidget {
             if (integracoes.isEmpty)
               const Text('Nenhum registro de integração encontrado.')
             else
-              ...integracoes.map((reg) => IntegracaoCardWidget(registro: reg)),
+              ...integracoes.map((reg) => IntegracaoCardWidget(registro: reg, viewModel: viewModel)),
             
             const SizedBox(height: 16),
             if (pedido != null)
