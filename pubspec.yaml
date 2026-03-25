@@ -43,7 +43,10 @@ dependencies:
   package_info_plus: ^8.3.0
   multi_split_view: ^3.6.1
   intl: ^0.20.2
+  web: ^1.1.0
+  syncfusion_localizations: ^33.1.44
   syncfusion_flutter_datagrid: ^33.1.44
+  syncfusion_flutter_datagrid_export: ^33.1.44
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -70,6 +73,8 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - assets/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

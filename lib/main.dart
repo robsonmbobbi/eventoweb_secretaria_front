@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:eventoweb_secretaria_front/data/repositories/events/events_ws.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/financeiro/contas_ws.dart';
 import 'package:eventoweb_secretaria_front/data/repositories/financeiro/contas_bancarias_ws.dart';
@@ -20,6 +22,7 @@ import 'package:eventoweb_secretaria_front/routing/router.dart';
 import 'package:eventoweb_secretaria_front/ui/shell/view_model/shell_viewmodel.dart';
 import 'package:eventoweb_secretaria_front/ui/usuarios/listagem/view_model/usuarios_listagem_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:go_router/go_router.dart';
@@ -27,14 +30,17 @@ import 'package:provider/provider.dart';
 
 import 'data/repositories/inscricoes/inscricoes_ws.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   GoRouter.optionURLReflectsImperativeAPIs = true;
   usePathUrlStrategy();
+
+  var json = jsonDecode(await rootBundle.loadString('assets/config.json'));
 
   runApp(
     MultiProvider(
       providers: [
-        Provider(create: (_) => WSClient("http://localhost:5067/api/")),
+        Provider(create: (_) => WSClient(json["urlApi"])),
         Provider(create: (context) => AuthRepository()),
         Provider(create: (context) => VersionAppRepository()),
         Provider(create: (context) => AuthWS(context.read())),

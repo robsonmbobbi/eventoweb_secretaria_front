@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/dto_inscricao_listagem.dart';
 import 'package:eventoweb_secretaria_front/data/models/inscricoes/enum_situacao_inscricao.dart';
 import 'package:eventoweb_secretaria_front/ui/core/ui/loading_overlay.dart';
@@ -5,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:multi_split_view/multi_split_view.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+import 'package:syncfusion_flutter_datagrid_export/export.dart';
+import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio;
 
 import '../../../../utils/result.dart';
 import '../../../core/themes/theme_back_button.dart';
@@ -12,6 +16,8 @@ import '../../../core/ui/message_panel_widget.dart';
 import '../view_model/inscricoes_listagem_viewmodel.dart';
 import 'inscricoes_listagem_data_source.dart';
 import 'inscricao_detalhes_widget.dart';
+
+import 'package:web/web.dart' as web;
 
 class InscricoesListagemScreen extends StatefulWidget {
   final InscricoesListagemViewModel viewModel;
@@ -24,6 +30,8 @@ class InscricoesListagemScreen extends StatefulWidget {
 
 class _InscricoesListagemScreenState extends State<InscricoesListagemScreen> {
   late MultiSplitViewController _controller;
+
+  final GlobalKey<SfDataGridState> _keyDataGrid = GlobalKey<SfDataGridState>();
 
   @override
   void initState() {
@@ -85,6 +93,25 @@ class _InscricoesListagemScreenState extends State<InscricoesListagemScreen> {
                     const Spacer(),
                     ElevatedButton.icon(
                       onPressed: () {
+                        final xlsio.Workbook workbook = _keyDataGrid.currentState!.exportToExcelWorkbook();
+                        final List<int> bytes = workbook.saveAsStream();
+                        workbook.dispose();
+                        web.HTMLAnchorElement()
+                          ..href =
+                              'data:application/octet-stream;charset=utf-16le;base64,${base64.encode(bytes)}'
+                          ..setAttribute('download', "inscricoes.xlsx")
+                          ..click();
+                        },
+                      icon: const Icon(Icons.import_export_outlined),
+                      label: const Text('Exportar Grid'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    ElevatedButton.icon(
+                      onPressed: () {
                          context.push('/evento/${widget.viewModel.eventViewModel.eventoEscolhido!.id}/pedidos/novo');
                       },
                       icon: const Icon(Icons.add),
@@ -133,6 +160,7 @@ class _InscricoesListagemScreenState extends State<InscricoesListagemScreen> {
 
   Widget _buildGrid() {
     return SfDataGrid(
+      key: _keyDataGrid,
       source: InscricoesListagemDataSource(widget.viewModel.inscricoes, context),
       allowFiltering: true,
       allowSorting: true,
@@ -203,6 +231,20 @@ class _InscricoesListagemScreenState extends State<InscricoesListagemScreen> {
             child: const Text("Ações"),
           ),
         ),
+      ],
+      tableSummaryRows: [
+        GridTableSummaryRow(
+          showSummaryInRow: true,
+          title: "Total de registros: {contador_registros}",
+          columns: [
+            GridSummaryColumn(
+              columnName: "id",
+              name: "contador_registros",
+              summaryType: GridSummaryType.count
+            )
+          ],
+          position: GridTableSummaryRowPosition.bottom
+        )
       ],
     );
   }
