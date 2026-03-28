@@ -175,6 +175,7 @@ class _InscricoesListagemScreenState extends State<InscricoesListagemScreen> {
           widget.viewModel.selecionarInscricao.execute(inscricao);
         }
       },
+      allowColumnsResizing: true,
       columns: [
         GridColumn(
           columnName: "id",

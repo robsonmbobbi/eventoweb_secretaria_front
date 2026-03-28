@@ -98,7 +98,9 @@ class _InscricaoFormDialogState extends State<InscricaoFormDialog> {
   final _resp2NomeController = TextEditingController();
 
   bool _resp1Found = false;
+  int? _idInscResp1 = null;
   bool _resp2Found = false;
+  int? _idInscResp2 = null;
 
   DateTime? _dataNascimento;
   bool _dormeEvento = true;
@@ -148,11 +150,13 @@ class _InscricaoFormDialogState extends State<InscricaoFormDialog> {
     if (ins.responsavel1 != null) {
       _resp1CpfController.text = ins.responsavel1!.cpf ?? '';
       _resp1NomeController.text = ins.responsavel1!.nome ?? '';
+      _idInscResp1 = ins.responsavel1!.idInscricao;
       _resp1Found = true;
     }
     if (ins.responsavel2 != null) {
       _resp2CpfController.text = ins.responsavel2!.cpf ?? '';
       _resp2NomeController.text = ins.responsavel2!.nome ?? '';
+      _idInscResp2 = ins.responsavel2!.idInscricao;
       _resp2Found = true;
     }
   }
@@ -375,16 +379,26 @@ class _InscricaoFormDialogState extends State<InscricaoFormDialog> {
 
           if (_isInfantil()) ...[
             _buildSectionTitle('Responsáveis'),
-            _buildResponsavelField(1, _resp1CpfController, _resp1NomeController, _resp1Found, (found) => setState(() => _resp1Found = found)),
+            _buildResponsavelField(1, _resp1CpfController, _resp1NomeController, _resp1Found,
+                    (found, idInscricao)  {
+                      setState(() => _resp1Found = found);
+                      _idInscResp1 = idInscricao;
+                    }
+            ),
             const SizedBox(height: 8),
-            _buildResponsavelField(2, _resp2CpfController, _resp2NomeController, _resp2Found, (found) => setState(() => _resp2Found = found)),
+            _buildResponsavelField(2, _resp2CpfController, _resp2NomeController, _resp2Found,
+                    (found, idInscricao) {
+                      setState(() => _resp2Found = found);
+                      _idInscResp2 = idInscricao;
+                    }
+            ),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildResponsavelField(int index, TextEditingController cpfCtrl, TextEditingController nomeCtrl, bool found, Function(bool) setFound) {
+  Widget _buildResponsavelField(int index, TextEditingController cpfCtrl, TextEditingController nomeCtrl, bool found, Function(bool, int) setFound) {
     return Row(
       children: [
         Expanded(
@@ -426,7 +440,7 @@ class _InscricaoFormDialogState extends State<InscricaoFormDialog> {
     );
   }
 
-  void _buscarResponsavel(TextEditingController cpfCtrl, TextEditingController nomeCtrl, Function(bool) setFound) async {
+  void _buscarResponsavel(TextEditingController cpfCtrl, TextEditingController nomeCtrl, Function(bool, int) setFound) async {
     if (cpfCtrl.text.isEmpty) return;
     setState(() => _isLoading = true);
     try {
@@ -434,7 +448,7 @@ class _InscricaoFormDialogState extends State<InscricaoFormDialog> {
       setState(() => _isLoading = false);
       if (res.situacao != EnumSituacaoPesquisaPessoa.inscricaoNaoExiste && res.inscricao?.tipo == EnumTipoInscricao.adulto) {
         nomeCtrl.text = res.inscricao!.pessoa.nome;
-        setFound(true);
+        setFound(true, res.inscricao!.id!);
       } else {
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Responsável adulto não encontrado ou não inscrito.')));
       }
@@ -444,10 +458,10 @@ class _InscricaoFormDialogState extends State<InscricaoFormDialog> {
     }
   }
 
-  void _limparResponsavel(TextEditingController cpfCtrl, TextEditingController nomeCtrl, Function(bool) setFound) {
+  void _limparResponsavel(TextEditingController cpfCtrl, TextEditingController nomeCtrl, Function(bool, int) setFound) {
     cpfCtrl.clear();
     nomeCtrl.clear();
-    setFound(false);
+    setFound(false, 0);
   }
 
   Widget _buildReadOnlyInfo() {
@@ -634,8 +648,8 @@ class _InscricaoFormDialogState extends State<InscricaoFormDialog> {
         instituicoesEspiritasFrequenta: !_isInfantil() ? _instituicaoController.text : null,
         tipoParticipante: _tipoParticipante,
         observacoes: _observacoesController.text,
-        responsavel1: _resp1Found ? DTOResponsavel(idInscricao: baseInscricao.id ?? 0, cpf: _resp1CpfController.text.replaceAll(RegExp(r'\D'), ''), nome: _resp1NomeController.text) : null,
-        responsavel2: _resp2Found ? DTOResponsavel(idInscricao: baseInscricao.id ?? 0, cpf: _resp2CpfController.text.replaceAll(RegExp(r'\D'), ''), nome: _resp2NomeController.text) : null,
+        responsavel1: _resp1Found ? DTOResponsavel(idInscricao: _idInscResp1 ?? 0, cpf: _resp1CpfController.text.replaceAll(RegExp(r'\D'), ''), nome: _resp1NomeController.text) : null,
+        responsavel2: _resp2Found ? DTOResponsavel(idInscricao:_idInscResp2 ?? 0, cpf: _resp2CpfController.text.replaceAll(RegExp(r'\D'), ''), nome: _resp2NomeController.text) : null,
       );
      
       widget.onSave(novaInscricao);
